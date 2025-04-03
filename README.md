@@ -1,4 +1,4 @@
-# ChatGPT Vs. DeepSeek: Battle of the Bots  
+# Beyond the Prompt: A Quantitative Study of ChatGPT vs. DeepSeek
 **Authors**: Matthew Fredrik, Akhil Krishnan, Sanjay Mohan Kumar, Stefan Popescu  
 
 ## Introduction  
