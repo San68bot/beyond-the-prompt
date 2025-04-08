@@ -33,3 +33,40 @@ The following studies have conducted similar comparative evaluations:
 - **Shakya, R., Vadiee, F., & Khalil, M.** (2025). *A Showdown of ChatGPT vs DeepSeek in Solving Programming Tasks*. [arXiv:2503.13549](https://arxiv.org/abs/2503.13549)
 
 These works provide a valuable foundation and context for our study, particularly in specific application domains such as programming and scientific computation.
+
+---
+
+## Getting Started
+
+### 📦 Environment Setup
+
+To create a reproducible environment for this project, we use Conda and the provided `environment.yml` file.
+
+#### 1. Install Conda
+If you don't already have Conda installed, install [Miniconda](https://docs.conda.io/en/latest/miniconda.html) or [Anaconda](https://www.anaconda.com/).
+
+#### 2. Clone the repository
+```bash
+git clone https://github.com/San68bot/beyond-the-prompt.git
+cd beyond-the-prompt
+```
+
+#### 3. Create the environment
+```bash
+conda env create -f environment.yml
+```
+
+#### 4. Activate the environment
+```bash
+conda activate beyond-the-prompt
+```
+
+#### 5. Enable Jupyter kernel
+```bash
+python -m ipykernel install --user --name=beyond-the-prompt
+```
+
+#### 6. Updating the environment (only when changes are made to `environment.yml`)
+```bash
+conda env update --file environment.yml --prune
+```
