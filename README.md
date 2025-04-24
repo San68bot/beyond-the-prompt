@@ -25,6 +25,14 @@ To analyze this dataset, we take the following approach:
 
 This multifaceted approach allows us to assess not only which model performs better overall, but also under what circumstances each model may excel or fail.
 
+## Research Questions
+
+- **Overall Performance:** How do ChatGPT and DeepSeek compare in terms of overall performance metrics (e.g., accuracy or user satisfaction scores)? Which model performs better on average, and is this difference statistically significant?
+- **Performance by Query Type:** Do the models have varying performance across different categories or types of queries? For example, does one model excel in certain topics or tasks while the other struggles, or vice versa?
+- **Shared Strengths/Weaknesses:** Are there patterns in how the models perform on the same queries? Do they tend to succeed on the same queries and fail on the same queries (indicating certain queries are inherently easy or hard for both), or does one model often succeed where the other fails?
+- **Impact of Query Characteristics:** How do characteristics of the queries (such as query length or complexity) affect each model’s performance? Are differences between ChatGPT and DeepSeek correlated with these query attributes (e.g., do longer or more complex queries favor one model over the other)?
+- **Hidden Patterns in Data:** Can we discover any hidden trends or groupings in the dataset using unsupervised techniques? For instance, by applying clustering or PCA, can we identify clusters of interactions with similar outcomes (such as a cluster of queries where one model consistently outperforms the other, or clusters corresponding to distinct difficulty levels)?
+
 ## Related Works  
 
 The following studies have conducted similar comparative evaluations:
