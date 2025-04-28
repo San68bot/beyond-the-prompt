@@ -1,0 +1,274 @@
+---
+title: "Research Questions"
+documentclass: article
+geometry: margin=1in
+fontsize: 11pt
+output:
+  pdf_document:
+    toc: false
+    df_print: kable
+    fig_caption: false
+    number_sections: false
+    dev: pdf
+    highlight: tango
+  html_document:
+    theme: default
+    self_contained: true
+    toc: false
+    df_print: kable
+    fig_caption: false
+    number_sections: false
+    smart: true
+    dev: svg
+---
+
+```{r setup, include = FALSE}
+# DO NOT ALTER THIS CHUNK
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = TRUE,
+  fig.width = 5,
+  fig.asp = 0.618,
+  out.width = "70%",
+  dpi = 120,
+  fig.align = "center",
+  cache = FALSE
+)
+is_pdf <- try (("pdf_document" %in% rmarkdown::all_output_formats(knitr::current_input())), silent=TRUE)
+is_pdf <- (is_pdf == TRUE)
+
+# Load required packages
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(broom))
+suppressPackageStartupMessages(library(modelr))
+suppressPackageStartupMessages(library(plotly))
+suppressPackageStartupMessages(library(infer))
+
+load("D:\\Matthew\\Documents\\College\\CDS 101 + 102\\Assignments\\Assignment 9\\bootstrap_cohens_d.RData")
+# Load dataset
+preprocessed_data <- read_csv("D:\\Matthew\\Documents\\College\\CS 484\\Final Project\\data\\preprocessed\\preprocessed_data.csv")
+chatgpt_data <- read_csv("chatgpt_data.csv")
+deepseek_data <- read_csv("deepseek_data.csv")
+```
+## Overall Performance
+
+How do ChatGPT and DeepSeek compare in terms of overall performance metrics (e.g., accuracy or user satisfaction scores)? Which model performs better on average, and is this difference statistically significant?
+
+i. Looking into the accuracy of both ChatGPT and DeepSeek
+
+```{r}
+preprocessed_data %>%
+  group_by(AI_Platform) %>%
+  summarize(
+    mean = mean(Response_Accuracy),
+    median = median(Response_Accuracy),
+    sd = sd(Response_Accuracy),
+    iqr = IQR(Response_Accuracy),
+    min = min(Response_Accuracy),
+    max = max(Response_Accuracy)
+  )
+```
+
+Null Hypothesis: $\mu$ = 0.8025743 (ChatGPT's mean)
+
+Alternate Hypothesis: $\mu$ > 0.8025743 (Seeing if the competitor DeepSeek has better accuracy than ChatGPT)
+
+Significance Level: $\alpha$ = 0.05
+
+Creating the Null Distribution
+```{r}
+accuracy_null <- preprocessed_data %>%
+  filter(AI_Platform == "DeepSeek") %>%
+  specify(formula = Response_Accuracy ~ NULL) %>%
+  hypothesize(null = "point", mu = 0.8025743) %>%
+  generate(reps = 10000, type = "bootstrap") %>%
+  calculate(stat = "mean")
+```
+
+Creating the Observed Statistic
+```{r}
+accuracy_obs_stat <- preprocessed_data %>%
+  filter(AI_Platform == "DeepSeek") %>%
+  specify(Response_Accuracy ~ NULL) %>%
+  calculate(stat = "mean")
+```
+
+Getting the p-value
+```{r, warning=FALSE}
+accuracy_null %>%
+get_p_value(obs_stat = accuracy_obs_stat, direction = "right")
+```
+
+```{r}
+visualize(accuracy_null) +
+  shade_p_value(obs_stat = accuracy_obs_stat, direction = "right") +
+  labs(
+    title = "Accuracy Null Distribution",
+    x = "Mean Accuracy"
+  )
+```
+With a significance level of $\alpha$ = 0.05, the p-value rejects the null hypothesis, which means that DeepSeek has better accuracy compared to ChatGPT.
+
+ii. Looking into the user experience scores for both ChatGPT and DeepSeek
+
+```{r}
+preprocessed_data %>%
+  group_by(AI_Platform) %>%
+  summarize(
+    mean = mean(User_Experience_Score),
+    median = median(User_Experience_Score),
+    sd = sd(User_Experience_Score),
+    iqr = IQR(User_Experience_Score),
+    min = min(User_Experience_Score),
+    max = max(User_Experience_Score)
+  )
+```
+
+Null Hypothesis: $\mu$ = 1.229591 (ChatGPT's mean)
+
+Alternate Hypothesis: $\mu$ > 1.229591 (Seeing if the competitor DeepSeek has better score than ChatGPT)
+
+Significance Level: $\alpha$ = 0.05
+
+Creating the Null Distribution
+```{r}
+experience_null <- preprocessed_data %>%
+  filter(AI_Platform == "DeepSeek") %>%
+  specify(formula = User_Experience_Score ~ NULL) %>%
+  hypothesize(null = "point", mu = 1.229591) %>%
+  generate(reps = 10000, type = "bootstrap") %>%
+  calculate(stat = "mean")
+```
+
+Creating the Observed Statistic
+```{r}
+experience_obs_stat <- preprocessed_data %>%
+  filter(AI_Platform == "DeepSeek") %>%
+  specify(User_Experience_Score ~ NULL) %>%
+  calculate(stat = "mean")
+```
+
+Getting the p-value
+```{r, warning=FALSE}
+experience_null %>%
+get_p_value(obs_stat = experience_obs_stat, direction = "right")
+```
+
+```{r}
+visualize(experience_null) +
+  shade_p_value(obs_stat = experience_obs_stat, direction = "right") +
+  labs(
+    title = "User Experience Score Null Distribution",
+    x = "Mean Experience Score"
+  )
+```
+With a significance level of $\alpha$ = 0.05, the p-value rejects the null hypothesis, which means that DeepSeek has better user experience score compared to ChatGPT.
+
+
+## Impact of Query Characteristics
+
+How do characteristics of the queries (such as query length or complexity) affect each model’s performance? Are differences between ChatGPT and DeepSeek correlated with these query attributes (e.g., do longer or more complex queries favor one model over the other)?
+
+```{r}
+preprocessed_data %>%
+  mutate(Input_Text_Length = as.character(Input_Text_Length)) %>%
+  ggplot() +
+  geom_boxplot(aes(x = reorder(Input_Text_Length, Response_Accuracy, FUN=median), y = Response_Accuracy)) + 
+  facet_wrap(~AI_Platform, scales = "free_x") +
+  labs(
+    title = "Input Text Length's Affect on Response Accuracy",
+    x = "Input Text Length",
+    y = "Response Accuracy"
+  )
+```
+By looking at the response accuracy of each model, it appears that for both ChatGPT and DeepSeek, they both start losing accuracy the more text there is in a query. However, DeepSeek manages to have a greater accuracy for all numbers of input text length.
+
+```{r}
+preprocessed_data %>%
+  mutate(Input_Text_Length = as.character(Input_Text_Length)) %>%
+  ggplot() +
+  geom_boxplot(aes(x = reorder(Input_Text_Length, Response_Speed_sec, FUN=median), y = Response_Speed_sec)) + 
+  facet_wrap(~AI_Platform, scales = "free_x") +
+  labs(
+    title = "Input Text Length's Affect on Response Speed",
+    x = "Input Text Length",
+    y = "Response Speed (sec)"
+  )
+```
+By look at this graph, it appears that for both 
+ChatGPT and DeepSeek, the longer the query is, the longer it takes for the models to respond to said query. However, DeepSeek is faster than ChatGPT by about 2 seconds.
+
+## Relationship of Response Accuracy and Response Speed on User Experience Score
+
+How does the response accuracy and response speed impact the user experience score of the two models? Would people rather prefer a model that has more speed or more one that is more accurate? We will be using a linear model to observe the relationship these two variables have with the user experience score and figuring which model people would prefer depending on these results
+
+i. Response Accuracy on User Experience Score
+```{r}
+score_accuracy_model <- lm(User_Experience_Score ~ Response_Accuracy, data = preprocessed_data)
+
+score_accuracy_model %>%
+  glance() %>%
+  select(r.squared)
+```
+
+```{r}
+score_accuracy_df <- preprocessed_data %>%
+  add_predictions(score_accuracy_model) %>%
+  add_residuals(score_accuracy_model)
+
+score_accuracy_df %>%
+  ggplot() +
+  geom_point(mapping = aes(x = Response_Accuracy, y = User_Experience_Score, color = AI_Platform)) +
+  geom_abline(slope = score_accuracy_model$coefficients[2], intercept = score_accuracy_model$coefficients[1]) +
+  labs(
+    title = "Affect of Response Accuracy on User Score",
+    x = "Accuracy",
+    y = "User Experience Score"
+  )
+```
+```{r}
+ggplot(score_accuracy_df) +
+  geom_histogram(aes(x = resid))
+```
+Assumptions of Linearity:
+1. Linear Relationship is found between Accuracy and Score.
+2. Histogram of Residuals is left-skewed, indicating that the model does not meet the condition of nearly normal residuals.
+3. The assumption of constant variation does not appear to stay true as many of the points are biased more towards the bottom of the line compared to above the line.
+
+
+ii. Response Speed on User Experience Score
+```{r}
+score_speed_model <- lm(User_Experience_Score ~ Response_Speed_sec, data = preprocessed_data)
+
+score_speed_model %>%
+  glance() %>%
+  select(r.squared)
+```
+
+```{r}
+score_speed_df <- preprocessed_data %>%
+  add_predictions(score_speed_model) %>%
+  add_residuals(score_speed_model)
+
+score_speed_df %>%
+  ggplot() +
+  geom_point(mapping = aes(x = Response_Speed_sec, y = User_Experience_Score, color = AI_Platform)) +
+  geom_abline(slope = score_speed_model$coefficients[2], intercept = score_speed_model$coefficients[1]) +
+  labs(
+    title = "Affect of Response Speed on User Score",
+    x = "Speed (sec)",
+    y = "User Experience Score"
+  )
+```
+
+```{r}
+ggplot(score_speed_df) +
+  geom_histogram(aes(x = resid))
+```
+
+Assumptions of Linearity:
+1. Linear Relationship is found between Speed and Score.
+2. Histogram of Residuals is left-skewed, indicating that the model does not meet the condition of nearly normal residuals.
+3. The assumption of constant variation appears to stay true as many of the points are located evenly across the bottom and top of the line.
+
+By looking at these two linear models, we can determine that speed has a bigger impact on the user experience compared to accuracy. The R-squared of the speed model is much better compared to the accuracy model and it also adheres to the assumptions of a linear model better.
